@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/ravigill3969/cloud-file-store/backend/handlers"
-	middleware "github.com/ravigill3969/cloud-file-store/backend/middlewares"
+	"backend/handlers"
+	middleware "backend/middlewares"
 	"github.com/redis/go-redis/v9"
 )
 

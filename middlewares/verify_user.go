@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ravigill3969/cloud-file-store/backend/utils"
+	"backend/utils"
 	"github.com/redis/go-redis/v9"
 )
 

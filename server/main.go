@@ -14,11 +14,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/joho/godotenv"
-	"github.com/ravigill3969/cloud-file-store/backend/database"
-	"github.com/ravigill3969/cloud-file-store/backend/handlers"
-	middleware "github.com/ravigill3969/cloud-file-store/backend/middlewares"
-	"github.com/ravigill3969/cloud-file-store/backend/routes"
-	"github.com/ravigill3969/cloud-file-store/backend/utils"
+	"backend/database"
+	"backend/handlers"
+	middleware "backend/middlewares"
+	"backend/routes"
+	"backend/utils"
 	"github.com/redis/go-redis/v9"
 )
 
