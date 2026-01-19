@@ -26,7 +26,7 @@ func SetAuthCookie(w http.ResponseWriter, tokenStringForAccess string, tokenStri
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
@@ -35,7 +35,7 @@ func SetAuthCookie(w http.ResponseWriter, tokenStringForAccess string, tokenStri
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 
