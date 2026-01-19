@@ -12,6 +12,7 @@ import (
 	middleware "backend/middlewares"
 	"backend/models"
 	"backend/utils"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/checkout/session"
@@ -19,8 +20,9 @@ import (
 )
 
 type Stripe struct {
-	Db    *sql.DB
-	Redis *redis.Client
+	Db          *sql.DB
+	Redis       *redis.Client
+	FrontendURL string
 }
 
 type metadataKey string
@@ -43,8 +45,8 @@ func (s *Stripe) CreateCheckoutSession(w http.ResponseWriter, r *http.Request) {
 	s.Db.QueryRow(`SELECT stripe_customer_id FROM stripe WHERE user_id = $1`, userID).Scan(&CustomerId)
 
 	params := &stripe.CheckoutSessionParams{
-		SuccessURL: stripe.String("http://localhost:5173/success"),
-		CancelURL:  stripe.String("http://localhost:5173/cancel"),
+		SuccessURL: stripe.String((s.FrontendURL + "/success")),
+		CancelURL:  stripe.String((s.FrontendURL + "/cancel")),
 		Mode:       stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		// Customer:   stripe.String(string(CustomerId)),
 

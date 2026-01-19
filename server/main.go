@@ -8,23 +8,23 @@ import (
 	"os"
 	"time"
 
+	"backend/database"
+	"backend/handlers"
+	middleware "backend/middlewares"
+	"backend/routes"
+	"backend/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/joho/godotenv"
-	"backend/database"
-	"backend/handlers"
-	middleware "backend/middlewares"
-	"backend/routes"
-	"backend/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	_ = godotenv.Load(".env")
-	
 
 	db, err := database.ConnectDB()
 
@@ -104,10 +104,13 @@ func main() {
 		S3Bucket:            bucket,
 		Redis:               redisClient,
 		AWSCloudFrontDomain: "water",
-		BACKEND_URL : backend_url,
+		BACKEND_URL:         backend_url,
 	}
+
+	frontend_url := os.Getenv("FRONTEND_URL")
 	stripeHandler := &handlers.Stripe{
-		Db: db,
+		Db:          db,
+		FrontendURL: frontend_url,
 	}
 
 	go func() {
