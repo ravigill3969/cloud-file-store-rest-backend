@@ -20,15 +20,16 @@ import (
 	"sync"
 	"time"
 
+	middleware "backend/middlewares"
+	"backend/models"
+	"backend/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager/s3manageriface"
 	"github.com/google/uuid"
-	middleware "backend/middlewares"
-	"backend/models"
-	"backend/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -2171,19 +2172,19 @@ func (fh *FileHandler) GetAllVideosWithUserID(w http.ResponseWriter, r *http.Req
 	defer rows.Close()
 
 	type VideoMetadata struct {
-		Vid              string    `json:"vid"`
-		OriginalFilename string    `json:"original_filename"`
-		MimeType         string    `json:"mime_type"`
-		FileSizeBytes    int64     `json:"file_size_bytes"`
-		Url              string    `json:"url"`
-		UploadDate       time.Time `json:"upload_date"`
+		Vid              string `json:"vid"`
+		OriginalFilename string `json:"original_filename"`
+		MimeType         string `json:"mime_type"`
+		FileSizeBytes    int64  `json:"file_size_bytes"`
+
+		UploadDate time.Time `json:"upload_date"`
 	}
 
 	var videos []VideoMetadata
 
 	for rows.Next() {
 		var v VideoMetadata
-		if err := rows.Scan(&v.Vid, &v.OriginalFilename, &v.MimeType, &v.FileSizeBytes, &v.Url, &v.UploadDate); err != nil {
+		if err := rows.Scan(&v.Vid, &v.OriginalFilename, &v.MimeType, &v.FileSizeBytes, &v.UploadDate); err != nil {
 			utils.RespondError(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
