@@ -848,6 +848,7 @@ func (fh *FileHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 }
 
 func (fh *FileHandler) UploadFilesWithGoRoutines(w http.ResponseWriter, r *http.Request) {
+
 	if err := r.ParseMultipartForm(maxMediaFormMemory); err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "Could not parse multipart form")
 		return
@@ -929,6 +930,7 @@ func (fh *FileHandler) UploadFilesWithGoRoutines(w http.ResponseWriter, r *http.
 				failed = append(failed, res)
 			}
 		} else {
+
 			uploaded = append(uploaded, pendingImageResults...)
 		}
 	}
@@ -938,6 +940,10 @@ func (fh *FileHandler) UploadFilesWithGoRoutines(w http.ResponseWriter, r *http.
 		status = http.StatusBadRequest
 	} else if len(failed) > 0 {
 		status = http.StatusPartialContent
+	}
+
+	for i := range uploaded {
+		uploaded[i].URL = ""
 	}
 
 	utils.RespondSuccess(w, status, map[string]any{
@@ -1697,19 +1703,19 @@ func (fh *FileHandler) VideoUpload(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 	close(resChan)
 
-	var successURL []string
+	var filename []string
 	var errMsg []string
 
 	for res := range resChan {
 		if res.Error != nil {
 			errMsg = append(errMsg, res.Error.Error())
 		} else {
-			successURL = append(successURL, res.URL)
+			filename = append(filename, res.Filename)
 		}
 	}
 
 	if len(errMsg) > 0 {
-		if len(successURL) == 0 {
+		if len(filename) == 0 {
 			utils.RespondError(w, http.StatusBadRequest, fmt.Sprintf("Errors: %v", errMsg))
 			return
 		}
@@ -1717,7 +1723,7 @@ func (fh *FileHandler) VideoUpload(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
 		w.WriteHeader(http.StatusPartialContent)
 		response := map[string]any{
-			"success": successURL,
+			"success": filename,
 			"error":   errMsg,
 		}
 
@@ -1730,7 +1736,7 @@ func (fh *FileHandler) VideoUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	response := map[string]any{
-		"success": successURL,
+		"success": filename,
 		"error":   errMsg,
 	}
 
@@ -2161,7 +2167,7 @@ func (fh *FileHandler) GetAllVideosWithUserID(w http.ResponseWriter, r *http.Req
 	}
 
 	rows, err := fh.DB.Query(`
-        SELECT id, original_filename, mime_type, file_size_bytes, url, upload_date
+        SELECT id, original_filename, mime_type, file_size_bytes, upload_date
         FROM videos
         WHERE user_id = $1
     `, userID)
@@ -2176,7 +2182,6 @@ func (fh *FileHandler) GetAllVideosWithUserID(w http.ResponseWriter, r *http.Req
 		OriginalFilename string `json:"original_filename"`
 		MimeType         string `json:"mime_type"`
 		FileSizeBytes    int64  `json:"file_size_bytes"`
-
 		UploadDate time.Time `json:"upload_date"`
 	}
 
@@ -2217,6 +2222,9 @@ func (fh *FileHandler) saveMediaToDB(userId string, s3Key, filename, mimeType st
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to insert video: %w", err)
 	}
+
+	fmt.Println(id)
+
 	return id, nil
 }
 
