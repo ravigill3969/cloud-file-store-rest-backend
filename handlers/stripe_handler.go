@@ -10,7 +10,6 @@ import (
 	"os"
 
 	middleware "backend/middlewares"
-	"backend/models"
 	"backend/utils"
 
 	"github.com/redis/go-redis/v9"
@@ -89,9 +88,9 @@ func (s *Stripe) CancelSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.CancelSubscriptionStripe
+	var subscriptionID string
 
-	err := s.Db.QueryRow(`SELECT stripe_customer_id, stripe_subscription_id, current_period_start from stripe WHERE user_id = $1`, userID).Scan(&user.CustomerId, &user.SubscriptionId, &user.SubscriptionCurrentPeriodStart)
+	err := s.Db.QueryRow(`SELECT stripe_subscription_id FROM stripe WHERE user_id = $1`, userID).Scan(&subscriptionID)
 
 	if err != nil {
 
@@ -108,14 +107,18 @@ func (s *Stripe) CancelSubscription(w http.ResponseWriter, r *http.Request) {
 
 	params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(true)}
 
-	_, err = subscription.Update(user.SubscriptionId, params)
+	_, err = subscription.Update(subscriptionID, params)
 
 	if err != nil {
 		utils.RespondInternal(w, err, "Failed to set subscription cancel at period end")
 		return
 	}
 
-	_, err = s.Db.Exec(`UPDATE users SET account_type = 'cancel_at_period_end' WHERE uuid = $1`, userID)
+	_, err = s.Db.Exec(`
+		UPDATE stripe
+		SET cancel_at_period_end = true, updated_at = now()
+		WHERE user_id = $1
+	`, userID)
 
 	if err != nil {
 		fmt.Println(err)

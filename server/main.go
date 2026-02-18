@@ -61,6 +61,7 @@ func main() {
 		fmt.Println("region is required")
 		return
 	}
+	
 	bucket := os.Getenv("AWS_BUCKET_NAME")
 
 	if bucket == " " {
