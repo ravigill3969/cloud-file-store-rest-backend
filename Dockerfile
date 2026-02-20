@@ -16,7 +16,7 @@ WORKDIR /
 
 COPY --from=builder /app-binary .
 
-EXPOSE 8084
+EXPOSE 9090
 USER nonroot:nonroot
 
 ENTRYPOINT [ "./app-binary" ]
